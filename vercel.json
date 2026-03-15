@@ -1,7 +1,7 @@
 {
-  "rewrites": [
-    { "source": "/api/submit", "destination": "/api/submit" },
-    { "source": "/api/responses", "destination": "/api/responses" }
-  ],
-  "outputDirectory": "public"
+  "version": 2,
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/(.*)", "dest": "/public/$1" }
+  ]
 }
