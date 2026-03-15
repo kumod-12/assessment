@@ -1,14 +1,25 @@
 const { MongoClient } = require('mongodb');
 
 let cachedClient = null;
+let cachedDb = null;
 
 async function getDb() {
-  if (cachedClient) return cachedClient.db('assessment');
+  if (cachedDb) return cachedDb;
 
-  const client = new MongoClient(process.env.MONGODB_URI);
+  if (!process.env.MONGODB_URI) {
+    throw new Error('MONGODB_URI environment variable is not set');
+  }
+
+  const client = new MongoClient(process.env.MONGODB_URI, {
+    maxPoolSize: 1,
+    serverSelectionTimeoutMS: 5000,
+    connectTimeoutMS: 5000,
+  });
+
   await client.connect();
   cachedClient = client;
-  return client.db('assessment');
+  cachedDb = client.db('assessment');
+  return cachedDb;
 }
 
 module.exports = { getDb };
