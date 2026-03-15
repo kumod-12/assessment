@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NDTV — Assessment Review Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #f5f5f5;
+      color: #1a1a1a;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #fff;
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header h1 { font-size: 1.3rem; font-weight: 700; }
+    .header .logo { font-size: 1.4rem; font-weight: 800; color: #c4161c; letter-spacing: 1px; }
+
+    .stats-bar {
+      display: flex;
+      gap: 1rem;
+      padding: 1.25rem 2rem;
+      background: #fff;
+      border-bottom: 1px solid #eee;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      background: #f8f8f8;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 1.4rem;
+      color: #1a1a1a;
+    }
+
+    .stat.pending strong { color: #d97706; }
+    .stat.shortlisted strong { color: #16a34a; }
+    .stat.rejected strong { color: #c4161c; }
+
+    .container {
+      max-width: 1100px;
+      margin: 1.5rem auto;
+      padding: 0 1rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: #999;
+    }
+
+    .empty-state h2 { font-size: 1.2rem; color: #666; margin-bottom: 0.5rem; }
+
+    .response-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      margin-bottom: 1.25rem;
+      overflow: hidden;
+    }
+
+    .response-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      cursor: pointer;
+      border-bottom: 1px solid #f0f0f0;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .response-header:hover { background: #fafafa; }
+
+    .candidate-info h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.15rem;
+    }
+
+    .candidate-info .meta {
+      font-size: 0.8rem;
+      color: #888;
+    }
+
+    .status-badge {
+      padding: 0.3rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-badge.pending { background: #fef3c7; color: #92400e; }
+    .status-badge.shortlisted { background: #dcfce7; color: #166534; }
+    .status-badge.rejected { background: #fee2e2; color: #991b1b; }
+
+    .response-body {
+      display: none;
+      padding: 1.5rem;
+      border-top: 1px solid #eee;
+    }
+
+    .response-body.open { display: block; }
+
+    .answer-block {
+      margin-bottom: 1.25rem;
+    }
+
+    .answer-block h4 {
+      font-size: 0.8rem;
+      color: #c4161c;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.4rem;
+    }
+
+    .answer-block p {
+      font-size: 0.9rem;
+      color: #444;
+      white-space: pre-wrap;
+    }
+
+    .info-row {
+      display: flex;
+      gap: 2rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .info-item label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #999;
+      display: block;
+    }
+
+    .info-item span {
+      font-size: 0.9rem;
+      color: #333;
+      font-weight: 500;
+    }
+
+    .info-item a {
+      color: #2563eb;
+      text-decoration: none;
+    }
+
+    .info-item a:hover { text-decoration: underline; }
+
+    .actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      flex-wrap: wrap;
+      padding-top: 1rem;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .action-btn {
+      padding: 0.5rem 1.2rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .action-btn:hover { opacity: 0.85; }
+
+    .btn-shortlist { background: #16a34a; color: #fff; }
+    .btn-reject { background: #dc2626; color: #fff; }
+    .btn-pending { background: #d97706; color: #fff; }
+    .btn-delete { background: #e5e7eb; color: #666; }
+
+    .notes-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 0.5rem 0.75rem;
+      border: 1.5px solid #ddd;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-family: inherit;
+    }
+
+    .notes-input:focus {
+      outline: none;
+      border-color: #16213e;
+    }
+
+    @media (max-width: 600px) {
+      .header { flex-direction: column; gap: 0.5rem; text-align: center; }
+      .stats-bar { justify-content: center; }
+      .info-row { gap: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <span class="logo">NDTV</span>
+      <h1>Assessment Review Dashboard</h1>
+    </div>
+    <button onclick="loadResponses()" style="background:#fff;color:#1a1a2e;border:none;padding:0.5rem 1rem;border-radius:6px;font-weight:600;cursor:pointer;font-size:0.85rem;">Refresh</button>
+  </div>
+
+  <div class="stats-bar" id="statsBar"></div>
+
+  <div class="container" id="responsesList">
+    <div class="empty-state">
+      <h2>Loading responses...</h2>
+    </div>
+  </div>
+
+  <script>
+    let responses = [];
+    let adminToken = sessionStorage.getItem('adminToken') || '';
+
+    function getAuthHeaders() {
+      return {
+        'Content-Type': 'application/json',
+        'X-Admin-Token': adminToken,
+      };
+    }
+
+    function promptForToken() {
+      const token = prompt('Enter admin token:');
+      if (!token) return false;
+      adminToken = token.trim();
+      sessionStorage.setItem('adminToken', adminToken);
+      return true;
+    }
+
+    async function loadResponses() {
+      if (!adminToken && !promptForToken()) {
+        document.getElementById('responsesList').innerHTML =
+          '<div class="empty-state"><h2>Authentication required</h2><p>Refresh the page and enter your admin token.</p></div>';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/responses', {
+          headers: getAuthHeaders(),
+        });
+
+        if (res.status === 401) {
+          sessionStorage.removeItem('adminToken');
+          adminToken = '';
+          if (promptForToken()) return loadResponses();
+          document.getElementById('responsesList').innerHTML =
+            '<div class="empty-state"><h2>Invalid token</h2><p>Refresh the page and try again.</p></div>';
+          return;
+        }
+
+        responses = await res.json();
+        render();
+      } catch {
+        document.getElementById('responsesList').innerHTML =
+          '<div class="empty-state"><h2>Failed to load responses</h2><p>Make sure the server is running.</p></div>';
+      }
+    }
+
+    function render() {
+      const container = document.getElementById('responsesList');
+      const statsBar = document.getElementById('statsBar');
+
+      const total = responses.length;
+      const pending = responses.filter(r => r.status === 'pending').length;
+      const shortlisted = responses.filter(r => r.status === 'shortlisted').length;
+      const rejected = responses.filter(r => r.status === 'rejected').length;
+
+      statsBar.innerHTML = `
+        <div class="stat"><strong>${total}</strong> Total</div>
+        <div class="stat pending"><strong>${pending}</strong> Pending</div>
+        <div class="stat shortlisted"><strong>${shortlisted}</strong> Shortlisted</div>
+        <div class="stat rejected"><strong>${rejected}</strong> Rejected</div>
+      `;
+
+      if (total === 0) {
+        container.innerHTML = '<div class="empty-state"><h2>No submissions yet</h2><p>Responses will appear here once candidates submit their assessments.</p></div>';
+        return;
+      }
+
+      container.innerHTML = responses.map((r, i) => `
+        <div class="response-card">
+          <div class="response-header" onclick="toggleCard(${i})">
+            <div class="candidate-info">
+              <h3>${escapeHtml(r.fullName)}</h3>
+              <span class="meta">${escapeHtml(r.email)} &middot; ${r.experience} years &middot; ${new Date(r.submittedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
+            <span class="status-badge ${r.status}">${r.status}</span>
+          </div>
+          <div class="response-body" id="body-${i}">
+            <div class="info-row">
+              <div class="info-item">
+                <label>LinkedIn</label>
+                <a href="${escapeHtml(r.linkedin)}" target="_blank" rel="noopener">${escapeHtml(r.linkedin)}</a>
+              </div>
+              <div class="info-item">
+                <label>Experience</label>
+                <span>${escapeHtml(r.experience)} years</span>
+              </div>
+            </div>
+
+            <div class="answer-block">
+              <h4>Q1 — AI Tools in Product Workflow</h4>
+              <p>${escapeHtml(r.q1)}</p>
+            </div>
+            <div class="answer-block">
+              <h4>Q2 — SEO & Growth AI Agent Approach</h4>
+              <p>${escapeHtml(r.q2)}</p>
+            </div>
+            <div class="answer-block">
+              <h4>Q3 — NDTV Website Changes (First 30 Days)</h4>
+              <p>${escapeHtml(r.q3)}</p>
+            </div>
+
+            <div class="actions">
+              <button class="action-btn btn-shortlist" onclick="updateStatus('${r.id}', 'shortlisted')">Shortlist</button>
+              <button class="action-btn btn-reject" onclick="updateStatus('${r.id}', 'rejected')">Reject</button>
+              <button class="action-btn btn-pending" onclick="updateStatus('${r.id}', 'pending')">Reset</button>
+              <input class="notes-input" id="notes-${r.id}" placeholder="Add reviewer notes..." value="${escapeHtml(r.notes || '')}" onblur="saveNotes('${r.id}')">
+              <button class="action-btn btn-delete" onclick="deleteResponse('${r.id}')">Delete</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function toggleCard(index) {
+      const body = document.getElementById('body-' + index);
+      body.classList.toggle('open');
+    }
+
+    async function updateStatus(id, status) {
+      await fetch('/api/responses', {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ id, status }),
+      });
+      loadResponses();
+    }
+
+    async function saveNotes(id) {
+      const notes = document.getElementById('notes-' + id).value;
+      await fetch('/api/responses', {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ id, notes }),
+      });
+    }
+
+    async function deleteResponse(id) {
+      if (!confirm('Delete this submission permanently?')) return;
+      await fetch('/api/responses', {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ id }),
+      });
+      loadResponses();
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    loadResponses();
+  </script>
+</body>
+</html>
