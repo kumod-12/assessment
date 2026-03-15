@@ -1,0 +1,16 @@
+{
+  "name": "ndtv-assessment",
+  "version": "1.0.0",
+  "description": "NDTV Product Manager Assessment Form",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "express-rate-limit": "^8.3.1",
+    "helmet": "^8.1.0",
+    "uuid": "^13.0.0"
+  }
+}
