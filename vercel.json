@@ -1,13 +1,7 @@
 {
-  "version": 2,
-  "builds": [
-    { "src": "api/submit.js", "use": "@vercel/node" },
-    { "src": "api/responses.js", "use": "@vercel/node" },
-    { "src": "public/**", "use": "@vercel/static" }
+  "rewrites": [
+    { "source": "/api/submit", "destination": "/api/submit" },
+    { "source": "/api/responses", "destination": "/api/responses" }
   ],
-  "routes": [
-    { "src": "/api/submit", "dest": "/api/submit.js" },
-    { "src": "/api/responses", "dest": "/api/responses.js" },
-    { "src": "/(.*)", "dest": "/public/$1" }
-  ]
+  "outputDirectory": "public"
 }
