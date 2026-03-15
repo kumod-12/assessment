@@ -1,5 +1,5 @@
 const { MongoClient } = require('mongodb');
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 
 // ── DB connection (cached across warm invocations) ──
 let cachedDb = null;
@@ -86,7 +86,7 @@ module.exports = async function handler(req, res) {
     if (duplicate) return res.status(409).json({ error: 'A submission with this email already exists.' });
 
     await collection.insertOne({
-      id: uuidv4(),
+      id: crypto.randomUUID(),
       fullName, email, linkedin, experience, q1, q2, q3,
       submittedAt: new Date().toISOString(),
       status: 'pending',
